@@ -1,0 +1,152 @@
+
+
+
+----> Virtual Hosting / Shared hosting <----
+
+
+# We need one Ubuntu based VM
+
+# Enter as root user and run commands:
+	
+	sudo su
+
+	apt install nginx vim -y
+
+	systemctl start nginx
+
+
+# Create directory:
+	
+	mkdir -p /var/www/marvels.com/html
+	mkdir -p /var/www/thanos.com/html
+
+
+# Create index.html file for domain marvels & thanos
+	
+	vim /var/www/marvels.com/html/index.html
+
+		<h1> This is marvels! </h1>
+
+		:wq
+
+	vim /var/www/thanos.com/html/index.html
+
+		<h1> This is thanos! </h1>
+
+		:wq	
+
+
+# Copy configuration
+
+	cp /etc/nginx/sites-available/default /etc/nginx/sites-available/marvels.conf
+	cp /etc/nginx/sites-available/default /etc/nginx/sites-available/thanos.conf
+
+
+
+# DO THIS PART CAREFULLY!!!!
+# Open file marvels.conf
+# You don't have to delete everything in marvels.conf
+# Just delete everything before the below part
+
+----------------- this part -------------------------
+# Virtual Host configuration for example.com
+#
+# You can move that to a different file under sites-available/ and symlink that
+# to sites-enabled/ to enable it.
+-----------------------------------------------
+
+
+# Edit marvels.conf and make it as default server.
+
+	vim /etc/nginx/sites-available/marvels.conf
+
+		server {
+		        listen 80 default_server;
+		        listen [::]:80 default_server;
+
+		        root /var/www/marvels.com/html;
+		        index index.html index.htm;
+
+		        server_name marvels.com www.marvels.com;
+
+		        location / {
+		                try_files $uri $uri/ =404;
+		        }
+		}
+
+		:wq
+
+
+--------------------------------------------------
+
+#NOTE!
+- Here, "listen 80 default_server" means marvels.com has been set as default domain for our IP. 
+- Remember only one domain can be default_server!!!!
+
+--------------------------------------------------
+
+# Edit thanos.conf 
+
+	vim /etc/nginx/sites-available/thanos.conf
+
+		server {
+		        listen 80 ;
+		        listen [::]:80;
+
+		        root /var/www/thanos.com/html;
+		        index index.html index.htm;
+
+		        server_name thanos.com www.thanos.com;
+
+		        location / {
+		                try_files $uri $uri/ =404;
+		        }
+		}
+
+		:wq
+
+
+# create soft-link from both conf files
+
+	ln -s /etc/nginx/sites-available/marvels.conf /etc/nginx/sites-enabled/marvels.conf
+
+	ln -s /etc/nginx/sites-available/thanos.conf /etc/nginx/sites-enabled/thanos.conf
+
+
+# add entry into host file
+# Here IP is of the current machine where you have installed nginx
+	
+	vim /etc/hosts
+
+		192.168.144.134 marvels.com www.marvels.com
+		192.168.144.134 thanos.com www.thanos.com
+
+		:wq
+
+
+# restart the service
+	
+	systemctl restart nginx
+
+
+
+------------------------------------------------------
+
+OUTPUT::
+
+root@master:/etc/nginx/sites-available# curl marvels.com
+
+This is marvels!
+root@master:/etc/nginx/sites-available# curl thanos.com
+
+This is thanos!
+root@master:/etc/nginx/sites-available# curl 192.168.144.134
+
+This is marvels!
+
+------------------------------------------------------
+
+
+
+
+
