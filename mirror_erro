@@ -1,0 +1,28 @@
+
+
+
+
+# if yum install not working
+
+ sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+ sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+# OpenVPN lab repo
+https://github.com/angristan/openvpn-install/blob/master/openvpn-install.sh
+
+
+
+
+*-*-**-*-**-*-**-*-**-*-**-*-**-*-*
+--> firewalld
+
+"Masquerading" in firewalld is a technique used for Network Address Translation (NAT), specifically for translating internal IP addresses to a single external IP address. This is typically used to allow devices on a private network to access the internet through a single public IP address.
+
+
+
+
+
+
+
+
+
