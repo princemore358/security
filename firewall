@@ -1,0 +1,134 @@
+
+**********************************
+
+http://firewalld.org
+
+# dir of firewalld:
+/usr/lib/firewalld/zones 
+
+# dir of protocols like ssh:
+/usr/lib/firewalld/services
+
+**********************************
+
+firewalld logs:
+dir of logs >> /var/log/firewalld
+tail -f /var/log/firewalld
+
+**********************************
+
+systemctl is-active firewalld
+systemctl is-enabled firewalld	
+
+# list all services that are defined & recognized by firewalld
+firewall-cmd --get-services
+
+firewall-cmd --state
+firewall-cmd --get-zones
+
+# shows your default zone
+firewall-cmd --get-default-zone  
+
+# shows total no. of active zone along with their interface
+firewall-cmd --get-active-zones  	
+
+# to check rules of default zones
+firewall-cmd --list-all 		  	
+
+# to check rules for specific zone
+firewall-cmd --zone=dmz --list-all  
+
+# to add interface from one zone to other zone
+# refer to stm_change_interface.txt 
+firewall-cmd --zone=dmz --change-interface=ens33 --permanent
+firewall-cmd --reload
+
+# to add unused inteface
+firewall-cmd --zone=dmz --add-interface=ens33 			
+
+# to remove interface
+firewall-cmd --zone=dmz --remove-interface=ens33 		
+
+# list all interfaces
+firewall-cmd --zone=dmz --list-interfaces 				
+
+
+# To create a newzone we can use --new-zone option:
+firewall-cmd --new-zone=hpcsa --permanent
+firewall-cmd --reload
+
+# to set default zone
+firewall-cmd --set-default-zone=hpcsa
+
+# to see the default zone
+firewall-cmd --get-default-zone
+
+# To add any services:
+firewall-cmd --zone=public --add-service=ssh --permanent
+firewall-cmd --reload
+#OR
+firewall-cmd --zone=public --add-services={http,https} --permanent
+firewall-cmd --reload
+
+# To add port number
+firewall-cmd --zone=public --add-port=8080/tcp --add-port=8443/tcp --permanent
+firewall-cmd --reload
+
+
+# To remove port number
+firewall-cmd --zone=public --remove-port=8080/tcp --permanent
+firewall-cmd --reload
+
+# to block ping
+firewall-cmd --zone=public --add-icmp-block=echo-request --permanent
+firewall-cmd --reload
+
+# to allow ping
+firewall-cmd --zone=public --remove-icmp-block=echo-request --permanent
+firewall-cmd --reload
+
+# to display icmp types
+firewall-cmd --get-icmptypes
+
+
+# Reject all the traffic from 192.168.91.102
+
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.91.102/32" reject' --permanent
+firewall-cmd --reload
+firewall-cmd --list-rich-rules
+
+# To allow ssh connection from IP adrs 192.168.91.102
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.91.102/32" service name="ssh" accept' --permanent
+
+# Limit this conn one per minute from IP adrs 192.168.91.102
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.91.102/32" service name="telnet" limit value="1/m" accept' --permanent
+
+
+# to block ping from IP adrs 192.168.91.102
+
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.91.102/32" protocol value=icmp reject' --permanent
+
+firewall-cmd --reload
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Ignore this part!!!!
+
+
+ ---->> Testing ground <<----
+
+--> Drop all ICMP
+firewall-cmd --set-target=DROP --zone=public --permanent
+firewall-cmd --zone=army --add-icmp-block={echo-request,echo-reply,timestamp-request,timestamp-reply} --permanent
+firewall-cmd --reload
+
+--> Revert to default
+firewall-cmd --set-target=default --zone=public --permanent  
+firewall-cmd --reload
+
+
+
+
+
