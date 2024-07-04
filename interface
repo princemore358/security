@@ -1,0 +1,119 @@
+
+
+--> To change interface from army zone(active) to public zone(inactive)  
+
+
+[root@stm1 ~]# ip r
+default via 192.168.144.2 dev ens33 proto dhcp metric 100
+10.10.1.0/24 dev ens36 proto kernel scope link src 10.10.1.3 metric 101
+192.168.144.0/24 dev ens33 proto kernel scope link src 192.168.144.129 metric 100
+
+[root@stm1 ~]# firewall-cmd --zone=public --list-all
+public
+  target: default
+  icmp-block-inversion: no
+  interfaces:
+  sources:
+  services: dhcpv6-client http
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+[root@stm1 ~]# firewall-cmd --zone=army --list-all
+army (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33 ens36
+  sources:
+  services: ssh
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+[root@stm1 ~]# firewall-cmd --zone=public --change-interface=ens33 --permanent
+The interface is under control of NetworkManager, setting zone to 'public'.
+success
+[root@stm1 ~]# firewall-cmd --reload
+success
+[root@stm1 ~]# firewall-cmd --zone=public --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources:
+  services: dhcpv6-client http
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+[root@stm1 ~]# firewall-cmd --zone=army --list-all
+army (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens36
+  sources:
+  services: ssh
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+******************************************************
+
+
+## Some observation //
+
+
+[root@stm1 ~]# firewall-cmd --zone=public --remove-interface=ens33 --permanent
+The interface is under control of NetworkManager, setting zone to default.
+success
+
+[root@stm1 ~]# firewall-cmd --reload
+success
+[root@stm1 ~]# firewall-cmd --zone=public --list-all
+public
+  target: default
+  icmp-block-inversion: no
+  interfaces:
+  sources:
+  services: dhcpv6-client http
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+[root@stm1 ~]# firewall-cmd --get-active-zone
+army
+  interfaces: ens36 ens33
+[root@stm1 ~]# firewall-cmd --zone=army --list-all
+army (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33 ens36
+  sources:
+  services: ssh
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
