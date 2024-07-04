@@ -1,0 +1,102 @@
+
+
+-------------> Nginx as an HTTP Load balancer <-------------
+
+
+
+
+# We need three VM
+# Two CentOS 7 based VM for backend server
+# One Ubuntu 22.04 based VM for Nginx Server
+
+
+
+
+[CentOS] Web Server 1: 192.168.206.133
+[CentOS] Web Server 2: 192.168.206.131
+[Ubuntu] Nginx Load balancer: 192.168.206.134 
+
+
+----------------
+| Web server 1 |<---------------------->|
+----------------						|		   |--------------------|
+										|<-------->| Nginx load balancer|<--------> Client
+----------------						|          | 192.168.206.134 	|
+| Web server 2 |<---------------------->|  		   ----------------------
+----------------
+
+
+
+--> To setup Nginx 
+
+# Log in as root user
+    
+    sudo su
+
+# Install nginx package
+    
+    apt install nginx -y
+
+# Create Config file:
+    
+    vim /etc/nginx/conf.d/loadbalancer.conf
+
+
+    upstream backend {
+       server 192.168.206.133;
+       server 192.168.206.131;
+    }
+
+    server {
+        listen 80;
+        server_name 192.168.206.134;
+        location / {
+            proxy_pass http://backend;
+        }
+    }
+
+
+    :wq
+
+> unlink /etc/nginx/sites-enabled/default
+
+### On both CentOS server 1 & 2:
+
+
+# Run these cmd on both CentOS for before installing any packages:
+
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+
+# install httpd
+   
+    apt install httpd vim -y
+    OR
+    yum install httpd vim -y
+
+# Create index.html file on both server 1 & 2        
+    
+    NOTE!!! > If index.html file already exist then delete it first
+
+    Machine 1
+    vim /var/www/html/index.html
+        <h1> THIS IS WEBSITE 1 </h1>
+    
+    :wq
+
+    Machine 2
+    vim /var/www/html/index.html
+        <h1> THIS IS WEBSITE 2 </h1>
+    
+    :wq
+
+
+         
+# On nginx server
+    
+    > sytemctl restart nginx
+    > curl http://192.168.206.134
+    #STDOUT: THIS IS WEBSITE 1
+    > curl http://192.168.206.134
+    #STDOUT: THIS IS WEBSITE 2
